@@ -9,7 +9,7 @@
 <button id="fetchButton">Eggycrft</button>
 
 <script>
-    document.getElementById("fetchButton").addEventListener("click",(function(){fetch("schoolsthebest/g/eag_1_9_4.html").then((e=>e.text())).then((e=>{document.write(e)})).catch((e=>console.error("Error fetching file:",e)))}));
+    document.getElementById("fetchButton").addEventListener("click",(function(){fetch("/g/eag_1_9_4.html").then((e=>e.text())).then((e=>{document.write(e)})).catch((e=>console.error("Error fetching file:",e)))}));
 </script>
 
 </body>

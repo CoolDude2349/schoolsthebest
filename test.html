@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<title>Schoolwork Loader</title>
+<button id="fetchButton">Eggycrft</button>
+
+<script>
+    document.getElementById("fetchButton").addEventListener("click",(function(){fetch("g/eag_1_9_4.html").then((e=>e.text())).then((e=>{document.write(e)})).catch((e=>console.error("Error fetching file:",e)))}));
+</script>
+
+</body>
+</html>

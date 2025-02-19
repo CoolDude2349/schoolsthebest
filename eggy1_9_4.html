@@ -23,15 +23,23 @@
             }
         }
 
-        // Function to open cached HTML in a new about:blank page
+      
         function openCachedHTML() {
             const cachedHTML = localStorage.getItem('offlinePageWithJS');
             if (cachedHTML) {
                 const doc = document;
                 if (doc) {
-                    doc.open();
-                    doc.write(cachedHTML);
-                    doc.close();
+                    const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '500px';  
+
+        document.body.appendChild(iframe);
+        
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(html);
+        iframeDoc.close();
                 } else {
                     alert("What r u doing?.");
                 }
@@ -41,16 +49,21 @@
         }
 
         // Callback function to handle the fetched HTML
-        function handleFetchedHTML(html) {
-            const doc = document
-            doc.open();
-            doc.write(html);  
-            doc.close();
-            document.body.style.visibility = "visible"; 
-            document.body.style.opacity = "1"; 
-            cacheHTMLWithJS('offlinePageWithJS', html); 
-            console.log("Fetched HTML content: ", html);
-        }
+       function handleFetchedHTML(html) {
+ 
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '500px';  
+
+        document.body.appendChild(iframe);
+        
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(html);
+        iframeDoc.close();
+}
+
 
       
         fetch(rawGitHubURL)

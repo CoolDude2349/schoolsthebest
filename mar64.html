@@ -1,9 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Page Cache</title>
+    <script>
+        // Function to cache HTML content with js
+        function cacheHTMLWithJS(key, htmlContent) {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem(key, htmlContent);
+                console.log("HTML with JavaScript cached!");
+            } else {
+                console.log("localStorage is not supported.");
+            }
+        }
+
+        // Function to open cached HTML in the iframe (without opening a new tab)
+        function loadCachedHTMLInIframe() {
+            const cachedHTML = localStorage.getItem('offlinePageWithJS');
+            if (cachedHTML) {
+                const iframe = document.getElementById('contentIframe');
+                // Set the srcdoc attribute of the iframe to the cached HTML
+                iframe.srcdoc = cachedHTML;
+            } else {
+                alert("No cached HTML found.");
+            }
+        }
+
+        // Function to capture the HTML content of the current page and remove the service worker and local storage scripts
+        function captureCurrentHTML() {
+            // Remove service worker script and local-storage script
+            const scripts = document.querySelectorAll('script');
+            scripts.forEach(script => {
+                if (script.src.includes('service-worker.js') || script.src.includes('local-storage5.js') || script.innerHTML.includes('serviceWorker')) {
+                    script.remove();
+                }
+            });
+
+            // Get the current HTML of the page after removing certain scripts
+            const currentHTML = document.documentElement.outerHTML;
+            return currentHTML;
+        }
+
+        // Check if service worker is enabled
+        function isServiceWorkerEnabled() {
+            return 'serviceWorker' in navigator && navigator.serviceWorker.controller;
+        }
+
+        // Cache the current page's HTML when the page loads
+        window.onload = function() {
+            const htmlContent = captureCurrentHTML();
+            cacheHTMLWithJS('offlinePageWithJS', htmlContent);
+
+            // If offline and no service worker, load cached HTML into iframe
+            if (!navigator.onLine && !isServiceWorkerEnabled() && localStorage.getItem('offlinePageWithJS')) {
+                loadCachedHTMLInIframe();
+            } else {
+                console.log("Online or service worker is enabled. No need to open cache.");
+            }
+        };
+    </script>
+</head>
 <body>
-<iframe src="/schoolsthebest/g/m64.html">
-</iframe>
-<script>"serviceWorker"in navigator&&window.addEventListener("load",(()=>{navigator.serviceWorker.register("/schoolsthebest/service-worker.js").then((e=>{console.log("Service Worker registered with scope:",e.scope)})).catch((e=>{console.log("Service Worker registration failed:",e)}))}));</script>
-<script src="/schoolsthebest/local-storage5.js"></script>
+    <h1>Offline Page Demo</h1>
+    <p>If you're offline, the cached HTML will be loaded inside the iframe below.</p>
+
+    <!-- The iframe where the cached content will be loaded -->
+    <iframe id="contentIframe" src="/schoolsthebest/g/m64.html" width="100%" height="500px"></iframe>
+
+    <!-- Service Worker script that will be removed during caching -->
+    <script>
+        "serviceWorker" in navigator && window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/schoolsthebest/service-worker.js")
+                .then((e) => {
+                    console.log("Service Worker registered with scope:", e.scope);
+                })
+                .catch((e) => {
+                    console.log("Service Worker registration failed:", e);
+                });
+        });
+    </script>
 </body>
 </html>

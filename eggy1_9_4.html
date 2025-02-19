@@ -1,9 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load It</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; 
+        }
+    </style>
+</head>
 <body>
-<script src="/schoolsthebest/g/eag_1_9_4.js">
-</script>
-<script>"serviceWorker"in navigator&&window.addEventListener("load",(()=>{navigator.serviceWorker.register("/schoolsthebest/service-worker.js").then((e=>{console.log("Service Worker registered with scope:",e.scope)})).catch((e=>{console.log("Service Worker registration failed:",e)}))}));</script>
-<script src="/schoolsthebest/local-storage5.js"></script>
+
+    <script>
+        const rawGitHubURL = "/schoolsthebest/g/eag1_9_4.html"; 
+
+         function isServiceWorkerEnabled() {
+            return 'serviceWorker' in navigator && navigator.serviceWorker.controller
+        }
+        
+        function cacheHTMLWithJS(key, htmlContent) {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem(key, htmlContent);
+                console.log("HTML with JavaScript cached.")
+            } else {
+                console.log("localStorage is not supported.")
+            }
+        }
+
+        // Function to open cached HTML in a new about:blank page
+        function openCachedHTML() {
+            const cachedHTML = localStorage.getItem('offlinePageWithJS');
+            if (cachedHTML) {
+                const doc = document;
+                if (doc) {
+                    doc.open();
+                    doc.write(cachedHTML);
+                    doc.close();
+                } else {
+                    alert("What r u doing?.");
+                }
+            } else {
+                alert("No cached HTML found.");
+            }
+        }
+
+        // Callback function to handle the fetched HTML
+        function handleFetchedHTML(html) {
+            const doc = document
+            doc.open();
+            doc.write(html);  
+            doc.close();
+
+            cacheHTMLWithJS('offlinePageWithJS', html); 
+            console.log("Fetched HTML content: ", html);
+        }
+
+      
+        fetch(rawGitHubURL)
+            .then(response => response.text())
+            .then(html => {
+                handleFetchedHTML(html);  
+            })
+            .catch(error => console.error("Error loading HTML:", error))
+
+       
+         window.onload = function() {
+            if (!navigator.onLine && !isServiceWorkerEnabled() && localStorage.getItem('offlinePageWithJS')) {
+                document.body.innerHTML = ""; 
+                openCachedHTML() 
+            } else {
+                console.log("Online, service worker is enabled, or no cached HTML is available.")
+            }
+        }
+    </script>
+
 </body>
 </html>

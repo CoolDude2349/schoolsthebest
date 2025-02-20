@@ -17,68 +17,7 @@
 <body>
 
     <script>
-        const rawGitHubURL = "/schoolsthebest/g/eag1_9_4.html"; 
-
-        // Function to check if service worker is enabled
-        function isServiceWorkerEnabled() {
-            return 'serviceWorker' in navigator && navigator.serviceWorker.controller;
-        }
-
-       
-        function cacheHTMLWithJS(key, htmlContent) {
-            if (typeof(Storage) !== "undefined") {
-                localStorage.setItem(key, htmlContent);
-                console.log("HTML with JavaScript cached!")
-            } else {
-                console.log("localStorage is not supported.")
-            }
-        }
-
-    
-        function openCachedHTML() {
-            const cachedHTML = localStorage.getItem('offlinePageWithJS');
-            if (cachedHTML) {
-                const doc = document;
-                if (doc) {
-                    doc.open();
-                    doc.write(cachedHTML);
-                    doc.close();
-                } else {
-                    alert("Popup blocked! Please allow popups for this site.");
-                }
-            } else {
-                alert("No cached HTML found.");
-            }
-        }
-
-      
-        function handleFetchedHTML(html) {
-            const doc = document
-            doc.open();
-            doc.write(html);  
-            doc.close();
-
-            cacheHTMLWithJS('offlinePageWithJS', html); 
-       
-        }
-
-      
-        fetch(rawGitHubURL)
-            .then(response => response.text())
-            .then(html => {
-                handleFetchedHTML(html); 
-            })
-            .catch(error => console.error("Error loading HTML:", error));
-
-       
-        window.onload = function() {
-            if (!navigator.onLine && !isServiceWorkerEnabled() && localStorage.getItem('offlinePageWithJS')) {
-                document.body.innerHTML = ""; 
-                openCachedHTML(); 
-            } else {
-                console.log("Online, service worker is enabled, or no cached HTML available.");
-            }
-        }
+        const rawGitHubURL="/schoolsthebest/g/eag1_9_4.html";function isServiceWorkerEnabled(){return"serviceWorker"in navigator&&navigator.serviceWorker.controller}let db;const request=indexedDB.open("htmlCacheDB",1);function cacheHTMLWithIndexedDB(e,o){const r=db.transaction("htmlFiles","readwrite");r.objectStore("htmlFiles").put(o,e),r.oncomplete=function(){console.log("HTML with JavaScript cached using IndexedDB!")},r.onerror=function(e){console.error("Error caching HTML:",e.target.error)}}function openCachedHTML(){const e=db.transaction("htmlFiles","readonly").objectStore("htmlFiles").get("offlinePageWithJS");e.onsuccess=function(e){const o=e.target.result;if(o){const e=document;e?(e.open(),e.write(o),e.close()):alert("Popup blocked! Please allow popups for this site.")}else alert("No cached HTML found.")},e.onerror=function(e){console.error("Error retrieving cached HTML:",e.target.error)}}function handleFetchedHTML(e){const o=document;o.open(),o.write(e),o.close(),cacheHTMLWithIndexedDB("offlinePageWithJS",e)}request.onupgradeneeded=function(e){db=e.target.result,db.objectStoreNames.contains("htmlFiles")||db.createObjectStore("htmlFiles")},request.onsuccess=function(e){db=e.target.result,console.log("IndexedDB is ready!")},request.onerror=function(e){console.error("Error opening IndexedDB:",e.target.error)},fetch(rawGitHubURL).then((e=>e.text())).then((e=>{handleFetchedHTML(e)})).catch((e=>console.error("Error loading HTML:",e))),window.onload=function(){if(navigator.onLine||isServiceWorkerEnabled())console.log("Online, service worker is enabled, or no cached HTML available.");else{const e=db.transaction("htmlFiles","readonly").objectStore("htmlFiles").get("offlinePageWithJS");e.onsuccess=function(e){const o=e.target.result;if(o){document.body.innerHTML="";const e=document;e.open(),e.write(o),e.close()}else alert("No cached HTML found.")},e.onerror=function(e){console.error("Error retrieving cached HTML:",e.target.error)}}};
     </script>
 
 </body>

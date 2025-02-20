@@ -1,81 +1,85 @@
 <!DOCTYPE html>
-<html>
-<body>
-<iframe src="/schoolsthebest/g/m64.html"  
-            frameborder="0" 
-            marginheight="0" 
-            marginwidth="0" 
-            width="100%" 
-            height="100%" 
-            scrolling="auto">
-</iframe>
-<script>"serviceWorker"in navigator&&window.addEventListener("load",(()=>{navigator.serviceWorker.register("/schoolsthebest/service-worker.js").then((e=>{console.log("Service Worker registered with scope:",e.scope)})).catch((e=>{console.log("Service Worker registration failed:",e)}))}));</script>
-<script> 
-// Function to cache HTML content with js
-function cacheHTMLWithJS(key, htmlContent) {
-    if (typeof(Storage) !== "undefined") {
-        localStorage.setItem(key, htmlContent);
-        console.log("HTML with JavaScript cached!");
-    } else {
-        console.log("localStorage is not supported.");
-    }
-}
-
-// Function to open cached HTML in a new about:blank page
-function openCachedHTML() {
-    const cachedHTML = localStorage.getItem('offlinePageWithJS');
-    if (cachedHTML) {
-       
-
-        const doc = document
-    
-        if (doc) {
-            doc.open()
-            doc.write(cachedHTML)
-            doc.close()
-        } else {
-            alert("Popup blocked! Please allow popups for this site.");
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load It</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; 
         }
-    } else {
-        alert("No cached HTML found.");
-    }
-}
-
-// The new HTML content to be cached.
-const htmlWithJS = `
-<!DOCTYPE html>
-<html>
+    </style>
+</head>
 <body>
-<iframe src="/schoolsthebest/g/m64.html"  
-            frameborder="0" 
-            marginheight="0" 
-            marginwidth="0" 
-            width="100%" 
-            height="100%" 
-            scrolling="auto">
-</iframe>
-</body> </html>
-`;
 
+    <script>
+        const rawGitHubURL = "/schoolsthebest/g/m64.html"; 
 
-cacheHTMLWithJS('offlinePageWithJS', htmlWithJS);
+        // Function to check if service worker is enabled
+        function isServiceWorkerEnabled() {
+            return 'serviceWorker' in navigator && navigator.serviceWorker.controller;
+        }
 
+       
+        function cacheHTMLWithJS(key, htmlContent) {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem(key, htmlContent);
+                console.log("HTML with JavaScript cached!")
+            } else {
+                console.log("localStorage is not supported.")
+            }
+        }
 
-function isServiceWorkerEnabled() {
-    return 'serviceWorker' in navigator && navigator.serviceWorker.controller;
-}
+    
+        function openCachedHTML() {
+            const cachedHTML = localStorage.getItem('offlinePageWithJS');
+            if (cachedHTML) {
+                const doc = document;
+                if (doc) {
+                    doc.open();
+                    doc.write(cachedHTML);
+                    doc.close();
+                } else {
+                    alert("Popup blocked! Please allow popups for this site.");
+                }
+            } else {
+                alert("No cached HTML found.");
+            }
+        }
 
-// Add a button to the **current page** when offline & no service worker
-window.onload = function() {
-    if (!navigator.onLine && !isServiceWorkerEnabled() && localStorage.getItem('offlinePageWithJS')) {
-    document.body.innerHTML = ""; // Clear existing content
-    openCachedHTML();
-} else {
-    console.log("Online or service worker is enabled. No need to open cache.");
-}
+      
+        function handleFetchedHTML(html) {
+            const doc = document
+            doc.open();
+            doc.write(html);  
+            doc.close();
 
-};
+            cacheHTMLWithJS('offlinePageWithJS', html); 
+       
+        }
 
-</script>
+      
+        fetch(rawGitHubURL)
+            .then(response => response.text())
+            .then(html => {
+                handleFetchedHTML(html); 
+            })
+            .catch(error => console.error("Error loading HTML:", error));
+
+       
+        window.onload = function() {
+            if (!navigator.onLine && !isServiceWorkerEnabled() && localStorage.getItem('offlinePageWithJS')) {
+                document.body.innerHTML = ""; 
+                openCachedHTML(); 
+            } else {
+                console.log("Online, service worker is enabled, or no cached HTML available.");
+            }
+        }
+    </script>
+
 </body>
 </html>

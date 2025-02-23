@@ -1,1 +1,134 @@
-<!doctype html><html lang="en"><meta charset="UTF-8"><meta content="width=device-width,initial-scale=1" name="viewport"><title>Drag and Drop File</title><style>#drop-area{width:400px;height:200px;border:2px dashed #aaa;text-align:center;line-height:200px;font-size:18px;color:#555;margin-bottom:20px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;z-index:10}iframe{position:absolute;top:0;left:0;width:100vw;height:100vh;border:none}</style><div id="drop-area">Drag file here</div><iframe id="file-content"></iframe><script>const dropArea=document.getElementById("drop-area"),iframe=document.getElementById("file-content");dropArea.addEventListener("dragover",e=>{e.preventDefault(),dropArea.style.backgroundColor="#f0f0f0"}),dropArea.addEventListener("dragleave",()=>{dropArea.style.backgroundColor=""}),dropArea.addEventListener("drop",e=>{e.preventDefault(),dropArea.style.backgroundColor="";const r=e.dataTransfer.files[0];if(r){const e=new FileReader;e.onload=function(e){const r=iframe.contentDocument||iframe.contentWindow.document;r.open(),r.write(e.target.result),r.close(),dropArea.style.display="none"},e.readAsText(r)}});</script><script>let db,html="<!doctype html><html lang='en'><meta charset='UTF-8'><meta content='width=device-width,initial-scale=1' name='viewport'><title>Drag and Drop File</title><style>#drop-area{width:400px;height:200px;border:2px dashed #aaa;text-align:center;line-height:200px;font-size:18px;color:#555;margin-bottom:20px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;z-index:10}iframe{position:absolute;top:0;left:0;width:100vw;height:100vh;border:none}</style><div id='drop-area'>Drag file here</div><iframe id='file-content'></iframe><script>const dropArea=document.getElementById('drop-area'),iframe=document.getElementById('file-content');dropArea.addEventListener('dragover',e=>{e.preventDefault(),dropArea.style.backgroundColor='#f0f0f0'}),dropArea.addEventListener('dragleave',()=>{dropArea.style.backgroundColor=''}),dropArea.addEventListener('drop',e=>{e.preventDefault(),dropArea.style.backgroundColor='';const r=e.dataTransfer.files[0];if(r){const e=new FileReader;e.onload=function(e){const r=iframe.contentDocument||iframe.contentWindow.document;r.open(),r.write(e.target.result),r.close(),dropArea.style.display='none'},e.readAsText(r)}});<\/script>";const request=indexedDB.open("htmlCacheDB",1);function cacheHTMLWithIndexedDB(e,n){const t=db.transaction("htmlFiles","readwrite");t.objectStore("htmlFiles").put(n,e),t.oncomplete=()=>console.log("HTML content cached in IndexedDB."),t.onerror=e=>console.error("Error caching HTML:",e.target.error)}function getHtml(){let e=document.getElementById("textbox").value;const n=document;n.open(),n.write(e),n.close()}request.onupgradeneeded=e=>{db=e.target.result,db.objectStoreNames.contains("htmlFiles")||db.createObjectStore("htmlFiles")},request.onsuccess=e=>{db=e.target.result,console.log("IndexedDB is ready!"),cacheHTMLWithIndexedDB("offlinePageWithJS",html)},request.onerror=e=>console.error("Error opening IndexedDB:",e.target.error),window.onload=()=>{"serviceWorker"in navigator&&navigator.serviceWorker.register("service-worker.js").then(()=>console.log("Service Worker registered.")).catch(e=>console.error("Service Worker registration failed:",e)),navigator.serviceWorker.controller?console.log("Service Worker active:",navigator.serviceWorker.controller):console.log("No active Service Worker."),navigator.onLine||(e=db.transaction("htmlFiles","readonly").objectStore("htmlFiles").get("offlinePageWithJS"),e.onsuccess=e=>{const n=e.target.result;n?(document.body.innerHTML="",console.log("Using IndexedDB cache."),document.open(),document.write(n),document.close()):console.log("No cached HTML found.")},e.onerror=e=>console.error("Error retrieving cached HTML:",e.target.error))};</script></html>
+<!doctype html>
+<html lang="en">
+  <meta charset="UTF-8">
+  <meta content="width=device-width,initial-scale=1" name="viewport">
+  <title>Drag and Drop File</title>
+  <style>
+    #drop-area {
+      width: 400px;
+      height: 200px;
+      border: 2px dashed #aaa;
+      text-align: center;
+      line-height: 200px;
+      font-size: 18px;
+      color: #555;
+      margin-bottom: 20px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      background: #fff;
+      z-index: 10;
+    }
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+  </style>
+  <div id="drop-area">Drag file here</div>
+  <iframe id="file-content"></iframe>
+  <script>
+    const dropArea = document.getElementById("drop-area"),
+      iframe = document.getElementById("file-content");
+    
+    dropArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = "#f0f0f0";
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+      dropArea.style.backgroundColor = "";
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = "";
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          doc.open();
+          doc.write(e.target.result);
+          doc.close();
+          dropArea.style.display = "none";
+          
+          // Cache HTML content in IndexedDB
+          cacheHTMLWithIndexedDB("offlinePageWithJS", e.target.result);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    let db;
+    const request = indexedDB.open("htmlCacheDB", 1);
+    
+    function cacheHTMLWithIndexedDB(key, content) {
+      const tx = db.transaction("htmlFiles", "readwrite");
+      tx.objectStore("htmlFiles").put(content, key);
+      tx.oncomplete = () => console.log("HTML content cached in IndexedDB.");
+      tx.onerror = (e) => console.error("Error caching HTML:", e.target.error);
+    }
+
+    function loadFromCache() {
+      const tx = db.transaction("htmlFiles", "readonly");
+      const store = tx.objectStore("htmlFiles");
+      const getRequest = store.get("offlinePageWithJS");
+      
+      getRequest.onsuccess = (e) => {
+        const cachedHTML = e.target.result;
+        if (cachedHTML) {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          doc.open();
+          doc.write(cachedHTML);
+          doc.close();
+          dropArea.style.display = "none";
+        } else {
+          console.log("No cached HTML found.");
+        }
+      };
+      
+      getRequest.onerror = (e) => console.error("Error retrieving cached HTML:", e.target.error);
+    }
+
+    request.onupgradeneeded = (e) => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains("htmlFiles")) {
+        db.createObjectStore("htmlFiles");
+      }
+    };
+
+    request.onsuccess = (e) => {
+      db = e.target.result;
+      console.log("IndexedDB is ready!");
+      
+      // Load the cached HTML on page load if offline
+      if (!navigator.onLine) {
+        loadFromCache();
+      }
+    };
+
+    request.onerror = (e) => console.error("Error opening IndexedDB:", e.target.error);
+
+    // Register service worker and handle offline scenario
+    window.onload = () => {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js").then(() => {
+          console.log("Service Worker registered.");
+        }).catch((e) => console.error("Service Worker registration failed:", e));
+      }
+      
+      if (navigator.onLine) {
+        console.log("You are online.");
+      } else {
+        console.log("You are offline.");
+        loadFromCache();  // Load cached HTML when offline
+      }
+    };
+  </script>
+</html>
